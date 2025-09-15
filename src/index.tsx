@@ -2,18 +2,42 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import backgroundImage from './assets/background.jpg';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const bodyStyle = {
+  background: `url(${backgroundImage}) no-repeat center center fixed`,
+  backgroundSize: 'cover',
+  margin: 0,
+  padding: '20px',
+  fontFamily: 'Arial, sans-serif',
+  color: '#333',
+  minHeight: '100vh',
+};
+
+const appStyle = {
+  maxWidth: '600px',
+  margin: '0 auto',
+  background: 'rgba(255, 255, 255, 0.9)', 
+  borderRadius: '8px',
+  padding: '20px',
+  boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+};
+
+function RootComponent() {
+  return (
+    <div style={bodyStyle}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', height: '100%' }}>
+        <div style={appStyle}>
+          <App />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
-    <App />
+    <RootComponent />
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
