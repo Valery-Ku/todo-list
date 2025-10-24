@@ -2,62 +2,107 @@ import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import './ToDoList.css';
 
 interface Task {
-  id: number;
+  _id: string;
   text: string;
   completed: boolean;
   isDeleting?: boolean;
 }
 
-const ToDoList: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const savedTasks = localStorage.getItem('todoTasks');
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+const API_URL = 'http://localhost:3000/tasks';
 
+const ToDoList: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskText, setNewTaskText] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    localStorage.setItem('todoTasks', JSON.stringify(tasks));
-  }, [tasks]);
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error('Ошибка загрузки задач');
+      const data = await response.json();
+      setTasks(data);
+      setError('');
+    } catch (err) {
+      setError('Не удалось подключиться к серверу — запусти бэкенд!');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setNewTaskText(e.target.value);
   };
 
-  const handleAddTask = (e: FormEvent<HTMLFormElement>) => {
+  const handleAddTask = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newTaskText.trim() === '') return;
-    const newTask: Task = {
-      id: Date.now(),
-      text: newTaskText,
-      completed: false,
-    };
-    setTasks(prev => [...prev, newTask]);
-    setNewTaskText('');
+    setLoading(true);
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newTaskText })
+      });
+      if (!response.ok) throw new Error('Ошибка добавления');
+      const newTask = await response.json();
+      setTasks(prev => [...prev, newTask]);
+      setNewTaskText('');
+      setError('');
+    } catch (err) {
+      setError('Ошибка добавления задачи');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleTaskCompletion = (id: number) => {
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleTaskCompletion = async (id: string) => {
+    const task = tasks.find(t => t._id === id);
+    if (!task) return;
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: !task.completed })
+      });
+      if (!response.ok) throw new Error('Ошибка обновления');
+      const updatedTask = await response.json();
+      setTasks(prev => prev.map(t => t._id === id ? updatedTask : t));
+      setError('');
+    } catch (err) {
+      setError('Ошибка обновления задачи');
+    }
   };
 
-  const deleteTask = (id: number) => {
+  const deleteTask = (id: string) => {
     setTasks(prev =>
       prev.map(task =>
-        task.id === id ? { ...task, isDeleting: true } : task
+        task._id === id ? { ...task, isDeleting: true } : task
       )
     );
-    setTimeout(() => {
-      setTasks(prev => prev.filter(task => task.id !== id));
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Ошибка удаления');
+        setTasks(prev => prev.filter(task => task._id !== id));
+        setError('');
+      } catch (err) {
+        setError('Ошибка удаления — задача восстановлена');
+        setTasks(prev => prev.map(t => t._id === id ? { ...t, isDeleting: false } : t));
+      }
     }, 500);
   };
 
   return (
     <div className="todo-container">
       <h1>Список дел</h1>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {loading && <p>Загрузка...</p>}
       <form onSubmit={handleAddTask} className="todo-form">
         <input
           type="text"
@@ -66,22 +111,22 @@ const ToDoList: React.FC = () => {
           onChange={handleInputChange}
           className="todo-input"
         />
-        <button type="submit" className="todo-add-btn">Добавить</button>
+        <button type="submit" className="todo-add-btn" disabled={loading}>Добавить</button>
       </form>
       <ul className="todo-list">
         {tasks.map(task => (
           <li
-            key={task.id}
+            key={task._id}
             className={`todo-item ${task.completed ? 'completed' : ''} ${task.isDeleting ? 'deleting' : ''}`}
           >
             <input
               type="checkbox"
               checked={task.completed}
-              onChange={() => toggleTaskCompletion(task.id)}
+              onChange={() => toggleTaskCompletion(task._id)}
               className="todo-checkbox"
             />
             <span className="todo-text">{task.text}</span>
-            <button onClick={() => deleteTask(task.id)} className="todo-delete-btn">Удалить</button>
+            <button onClick={() => deleteTask(task._id)} className="todo-delete-btn">Удалить</button>
           </li>
         ))}
       </ul>
