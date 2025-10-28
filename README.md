@@ -1,46 +1,80 @@
-# Getting Started with Create React App
+# ToDo List App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Это **ToDo List with Accounts** — полнофункциональное приложение для управления списками дел с системой аккаунтов. Пользователи могут регистрироваться, входить и управлять только своими задачами. Задачи фильтруются по UserID, обеспечивая приватность.
 
-## Available Scripts
+## Особенности
+- **Authentication:** Регистрация и логин с JWT токенами (безопасное хранение в localStorage), хэширование паролей.
+- **Personal Tasks:** Только владелец видит/управляет своими задачами (фильтр на backend, токен в headers).
+- **Full-Stack:** React/TypeScript frontend + Node.js/Express/MongoDB backend.
+- **Security:** Валидация, protected API, middleware проверки JWT.
 
-In the project directory, you can run:
+## Stack
+- **Frontend:** React, TypeScript, React Router DOM.
+- **Backend:** Node.js, Express.js, MongoDB/Mongoose, bcryptjs, jsonwebtoken.
+- **Tools:** npm, Git.
 
-### `npm start`
+## Структура проекта
+todo-list/
+├── README.md               # Этот документ
+├── frontend/               # React app
+│   ├── public/             # Статические файлы (index.html и т.д.)
+│   ├── src/
+│   │   ├── components/     # UI компоненты (ToDoList)
+│   │   ├── hooks/          # Хуки (useAuth, useTasks)
+│   │   ├── pages/          # Страницы (Register, Login, ToDoPage)
+│   │   ├── services/       # API сервисы (tasksApi для CRUD)
+│   │   ├── App.tsx         # Роутинг и защита маршрутов
+│   │   └── index.tsx
+│   ├── package.json        # Frontend dependencies
+├── backend/                # Server
+│   ├── controllers/        # Логика (auth, tasks)
+│   ├── middlewares/        # JWT проверка (authentication)
+│   ├── models/             # Models (User, Task)
+│   ├── routes/             # API routes (auth, tasks)
+│   ├── server.js           # Точка входа сервера
+│   ├── .env                # Секреты (JWT_SECRET, MONGODB_URI)
+├── package.json            # Backend dependencies
+└── .gitignore              # Игноры (node_modules, .env)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## API
+Базовый URL: http://localhost:5000
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **POST /auth/register:** Body: `{username, email, password, confirmPassword}` → Возвращает токен
+- **POST /auth/login:** Body: `{email, password}` → Возвращает токен
+- **GET /tasks:** Headers: `Authorization: Bearer <token>` → Только ваши задачи
+- **POST /tasks:** Headers + Body: `{text}` → Создает задачу
+- **PUT /tasks/:id:** Headers + Body: `{completed}` → Обновляет
+- **DELETE /tasks/:id:** Headers → Удаляет
 
-### `npm test`
+## Prerequisites
+Node.js (версия 16 или выше)
+MongoDB (локально или в облаке, например, MongoDB Atlas)
+npm или yarn
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Environment Variables
+Создайте файл backend/.env и добавьте следующие переменные:
 
-### `npm run build`
+MONGODB_URI=mongodb://localhost:27017/todoapp (например, mongodb://localhost:27017/todo-app для локальной базы) для подключения к MongoDB.
+PORT=5000
+JWT_SECRET=supersecretkey123456789 (Секретный ключ для JWT-токенов, например supersecretkey123456789, или сгенерируйте через онлайн-генератор или команду вроде `openssl rand -hex 32`).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting Started
+Клонируйте репозиторий:
+git clone <your-repo-url> (замените <your-repo-url> на ссылку на ваш GitHub-репо).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Установите зависимости:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Для backend: Перейдите в папку backend и выполните npm install.
+Для frontend: Перейдите в папку frontend и выполните npm install.
+Настройте переменные окружения:
+Создайте файл backend/.env и добавьте:
 
-### `npm run eject`
+JWT_SECRET: Секретный ключ для JWT (например, случайная строка из 32 символов).
+MONGODB_URI: URI для подключения к MongoDB (например, mongodb://localhost:27017/todo-app для локальной базы).
+Запустите приложение:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Backend: В папке backend выполните npm start (сервер запустится на порту 5000 по умолчанию).
+Frontend: В папке frontend выполните npm start.
+Убедитесь, что MongoDB запущена локально или подключена к облаку.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Тестирование: Откройте браузер чтобы зарегистрироваться и начать управлять задачами. 
