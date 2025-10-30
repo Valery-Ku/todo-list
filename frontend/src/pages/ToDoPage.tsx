@@ -1,13 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import ToDoList from '../components/ToDoList/ToDoList';
 import { useAuth } from '../hooks/useAuth';
 
 const ToDoPage: React.FC = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    navigate('/login');  
   };
 
   return (

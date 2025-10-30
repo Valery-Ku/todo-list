@@ -1,10 +1,11 @@
+// src/services/tasksApi.ts
 export interface Task {
   _id: string;
   text: string;
   completed: boolean;
 }
 
-const API_URL = 'http://localhost:5000/tasks';
+const API_URL = `${process.env.REACT_APP_API_URL}/tasks`;
 
 // Получение задач 
 export const fetchTasks = async (token: string | null): Promise<Task[]> => {
@@ -29,8 +30,8 @@ export const addTask = async (token: string, text: string): Promise<Task> => {
   return response.json();
 };
 
-// Обновление задачи (toggle completed)
-export const updateTask = async (token: string, id: string, updates: { completed: boolean }): Promise<Task> => {
+// Обновление задачи
+export const updateTask = async (token: string, id: string, updates: { text?: string; completed?: boolean }): Promise<Task> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: {

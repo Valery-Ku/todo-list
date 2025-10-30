@@ -61,6 +61,17 @@ export const useTasks = () => {
     }
   };
 
+  const editTask = async (id: string, newText: string) => { 
+    const token = getToken();
+    if (!token) return;
+    try {
+      await updateTask(token, id, { text: newText });
+      await loadTasks();
+    } catch (err) {
+      setError('Ошибка редактирования задачи');
+    }
+  };
+
   const removeTask = async (id: string) => {
     const token = getToken();
     if (!token) return;
@@ -79,6 +90,7 @@ export const useTasks = () => {
     isAuthenticated,
     addNewTask,
     toggleCompleted,
+    editTask,
     removeTask,
   };
 };

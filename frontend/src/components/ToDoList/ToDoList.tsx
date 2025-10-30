@@ -3,8 +3,10 @@ import './ToDoList.css';
 import { useTasks } from '../../hooks/useTasks';
 
 const ToDoList: React.FC = () => {
-  const { tasks, loading, error, isAuthenticated, addNewTask, toggleCompleted, removeTask } = useTasks();
+  const { tasks, loading, error, isAuthenticated, addNewTask, toggleCompleted, editTask, removeTask } = useTasks();
   const [newTaskText, setNewTaskText] = useState<string>('');
+  const [editingId, setEditingId] = useState<string>(''); 
+  const [editingText, setEditingText] = useState<string>('');
   const [deletingId, setDeletingId] = useState<string>('');
 
   const handleAddTask = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -13,6 +15,19 @@ const ToDoList: React.FC = () => {
       await addNewTask(newTaskText);
       setNewTaskText('');
     }
+  };
+
+  const handleEditStart = (id: string, text: string) => {
+    setEditingId(id);
+    setEditingText(text);
+  };
+
+  const handleEditSave = async () => {
+    if (editingText.trim()) {
+      await editTask(editingId, editingText);
+    }
+    setEditingId('');
+    setEditingText('');
   };
 
   const handleDelete = async (id: string) => {
@@ -53,7 +68,20 @@ const ToDoList: React.FC = () => {
               className="todo-checkbox"
               disabled={!isAuthenticated}
             />
-            <span className="todo-text">{task.text}</span>
+            {editingId === task._id ? (
+              <input
+                type="text"
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                onBlur={handleEditSave}
+                onKeyDown={(e) => e.key === 'Enter' && handleEditSave()}
+                className="todo-text-edit"
+              />
+            ) : (
+              <span className="todo-text" onDoubleClick={() => handleEditStart(task._id, task.text)}>
+                {task.text}
+              </span>
+            )}
             <button onClick={() => handleDelete(task._id)} className="todo-delete-btn" disabled={!isAuthenticated}>Удалить</button>
           </li>
         ))}

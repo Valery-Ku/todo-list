@@ -2,10 +2,11 @@ const Task = require('../models/Task');
 
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ userId: req.userId }); // Только свои задачи
+    const tasks = await Task.find({ userId: req.userId });
     res.json(tasks);
   } catch (err) {
-    res.status(500).json({ error: 'Не удалось получить задачи' });
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка при загрузке задач.' });
   }
 };
 
@@ -15,12 +16,13 @@ const createTask = async (req, res) => {
     if (!text) return res.status(400).json({ error: 'Текст обязателен' });
     const newTask = new Task({
       text,
-      userId: req.userId // Привязка к пользователю
+      userId: req.userId
     });
     await newTask.save();
     res.status(201).json(newTask);
   } catch (err) {
-    res.status(500).json({ error: 'Не удалось создать задачу' });
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка при создании задачи.' });
   }
 };
 
@@ -29,7 +31,7 @@ const updateTask = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: id, userId: req.userId }, // Только свои задачи можно обновлять
+      { _id: id, userId: req.userId },
       updates,
       { new: true, runValidators: true }
     );
@@ -44,7 +46,7 @@ const deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedTask = await Task.findOneAndDelete({ _id: id, userId: req.userId });
-if (!deletedTask) return res.status(404).json({ error: 'Задача не найдена или не ваша' });
+    if (!deletedTask) return res.status(404).json({ error: 'Задача не найдена или не ваша' });
     res.json({ message: 'Задача удалена' });
   } catch (err) {
     res.status(500).json({ error: 'Не удалось удалить задачу' });

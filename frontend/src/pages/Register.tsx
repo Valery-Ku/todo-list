@@ -13,7 +13,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) return setError('Пароли не совпадают');
     
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
+  const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }),
